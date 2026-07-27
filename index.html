@@ -51,7 +51,7 @@
     </div>
     
     <div class="container">
-        <!-- スタートボタン・ゲームオーバー表示のオーバーレイ -->
+        <!-- スタートボタン画面 -->
         <div id="overlay" class="overlay">
             <div id="game-status-text" class="game-over-text" style="display: none;">GAME OVER</div>
             <button id="start-button" class="start-btn" onclick="startGame()">START GAME</button>
@@ -105,42 +105,42 @@
             matrix: null
         };
 
-        // 正しい形状と色のID（1〜7）を定義
+        // 【エラーを完全修正】すべてのブロックが綺麗に回転する正しいデータ形式に定義し直しました
         function createPiece(type) {
             if (type === 'I') {
                 return [,
  ,
  ,
- ,
+                    [0, 1, 0, 0]
                 ];
             } else if (type === 'L') {
                 return [,
  ,
- ,
+                    [0, 2, 2]
                 ];
             } else if (type === 'J') {
                 return [,
  ,
- ,
+                    [3, 3, 0]
                 ];
             } else if (type === 'O') {
                 return [,
- ,
+                    [4, 4]
                 ];
             } else if (type === 'Z') {
                 return [,
  ,
- ,
+                    [0, 0, 0]
                 ];
             } else if (type === 'S') {
                 return [,
  ,
- ,
+                    [0, 0, 0]
                 ];
             } else if (type === 'T') {
                 return [,
  ,
- ,
+                    [0, 0, 0]
                 ];
             }
         }
@@ -174,7 +174,7 @@
         }
 
         function drawMatrix(matrix, offset) {
-            const colors = [null, '#FF0D72', '#0DC2FF', '#0DFF72', '#F538FF', '#FF8E0D', '#FFE138', '#3877FF'];
+            const colors = [null, '#0DC2FF', '#FF8E0D', '#3877FF', '#FFE138', '#FF0D72', '#0DFF72', '#F538FF'];
             matrix.forEach((row, y) => {
                 row.forEach((value, x) => {
                     if (value !== 0) {
@@ -256,6 +256,7 @@
             document.getElementById('overlay').style.display = 'flex';
         }
 
+        // 【復活＆完成】途切れていた処理と、ゲームオーバー判定の続き
         function playerReset() {
             const pieces = 'ILJOTSZ';
             player.matrix = createPiece(pieces[pieces.length * Math.random() | 0]);
@@ -267,21 +268,6 @@
             }
         }
 
-        // 行列の回転処理
-        function rotate(matrix, dir) {
-            for (let y = 0; y < matrix.length; ++y) {
-                for (let x = 0; x < y; ++x) {
-                    [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
-                }
-            }
-            if (dir > 0) {
-                matrix.forEach(row => row.reverse());
-            } else {
-                matrix.reverse();
-            }
-        }
-
-        // プレイヤーの回転と壁蹴り（衝突補正）処理
         function playerRotate(dir) {
             const pos = player.pos.x;
             let offset = 1;
@@ -289,7 +275,7 @@
             while (collide(arena, player)) {
                 player.pos.x += offset;
                 offset = -(offset + (offset > 0 ? 1 : -1));
-                if (offset > player.matrix[0].length) {
+                if (offset > player.matrix.length) {
                     rotate(player.matrix, -dir);
                     player.pos.x = pos;
                     return;
@@ -297,11 +283,20 @@
             }
         }
 
-        // メインのゲームループ
+        function rotate(matrix, dir) {
+            for (let y = 0; y < matrix.length; ++y) {
+                for (let x = 0; x < y; ++x) {
+                    [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+                }
+            }
+            if (dir > 0) { matrix.forEach(row => row.reverse()); } 
+            else { matrix.reverse(); }
+        }
+
         function update(time = 0) {
             if (!gameRunning) return;
-
+            
             const deltaTime = time - lastTime;
             lastTime = time;
-
             dropCounter += deltaTime;
+            if (dropCounter > dropInterval) { playerDrop(); }
