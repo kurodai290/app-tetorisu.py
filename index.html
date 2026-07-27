@@ -51,7 +51,7 @@
     </div>
     
     <div class="container">
-        <!-- ここにスタートボタンの画面があります -->
+        <!-- スタートボタン・ゲームオーバー表示のオーバーレイ -->
         <div id="overlay" class="overlay">
             <div id="game-status-text" class="game-over-text" style="display: none;">GAME OVER</div>
             <button id="start-button" class="start-btn" onclick="startGame()">START GAME</button>
@@ -99,13 +99,13 @@
         }
 
         // 12列×20行のステージ
-        const arena = createMatrix(12, 20);
+        let arena = createMatrix(12, 20);
         const player = {
             pos: {x: 0, y: 0},
             matrix: null
         };
 
-        // 正しい形状と色のID（1〜7）
+        // 正しい形状と色のID（1〜7）を定義
         function createPiece(type) {
             if (type === 'I') {
                 return [,
@@ -267,6 +267,21 @@
             }
         }
 
+        // 行列の回転処理
+        function rotate(matrix, dir) {
+            for (let y = 0; y < matrix.length; ++y) {
+                for (let x = 0; x < y; ++x) {
+                    [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+                }
+            }
+            if (dir > 0) {
+                matrix.forEach(row => row.reverse());
+            } else {
+                matrix.reverse();
+            }
+        }
+
+        // プレイヤーの回転と壁蹴り（衝突補正）処理
         function playerRotate(dir) {
             const pos = player.pos.x;
             let offset = 1;
@@ -274,7 +289,7 @@
             while (collide(arena, player)) {
                 player.pos.x += offset;
                 offset = -(offset + (offset > 0 ? 1 : -1));
-                if (offset > player.matrix.length) {
+                if (offset > player.matrix[0].length) {
                     rotate(player.matrix, -dir);
                     player.pos.x = pos;
                     return;
@@ -282,21 +297,11 @@
             }
         }
 
-        function rotate(matrix, dir) {
-            for (let y = 0; y < matrix.length; ++y) {
-                for (let x = 0; x < y; ++x) {
-                    [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
-                }
-            }
-            if (dir > 0) { matrix.forEach(row => row.reverse()); } 
-            else { matrix.reverse(); }
-        }
-
+        // メインのゲームループ
         function update(time = 0) {
             if (!gameRunning) return;
-            
+
             const deltaTime = time - lastTime;
             lastTime = time;
+
             dropCounter += deltaTime;
-            if (dropCounter > dropInterval) { playerDrop(); }
-            draw();
