@@ -75,13 +75,6 @@
         let dropInterval = 1000;
         let lastTime = 0;
 
-        // 12列×20行のステージ
-        const arena = createMatrix(12, 20);
-        const player = {
-            pos: {x: 0, y: 0},
-            matrix: null
-        };
-
         function updateInfo() {
             document.getElementById('score').innerText = score;
             document.getElementById('level').innerText = level;
@@ -105,7 +98,14 @@
             return matrix;
         }
 
-        // 【修正】正しい形状と色のID（1〜7）を割り当てました
+        // 12列×20行のステージ
+        const arena = createMatrix(12, 20);
+        const player = {
+            pos: {x: 0, y: 0},
+            matrix: null
+        };
+
+        // 正しい形状と色のID（1〜7）
         function createPiece(type) {
             if (type === 'I') {
                 return [,
@@ -260,25 +260,10 @@
             const pieces = 'ILJOTSZ';
             player.matrix = createPiece(pieces[pieces.length * Math.random() | 0]);
             player.pos.y = 0;
-            // 横幅の基準をarena[0].length（12マス）に修正
             player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
             
             if (collide(arena, player)) {
                 gameOver();
-            }
-        }
-
-        // 【修正】回転ロジックと衝突回避（壁蹴り）の追加
-        function rotate(matrix, dir) {
-            for (let y = 0; y < matrix.length; ++y) {
-                for (let x = 0; x < y; ++x) {
-                    [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
-                }
-            }
-            if (dir > 0) {
-                matrix.forEach(row => row.reverse());
-            } else {
-                matrix.reverse();
             }
         }
 
@@ -289,7 +274,7 @@
             while (collide(arena, player)) {
                 player.pos.x += offset;
                 offset = -(offset + (offset > 0 ? 1 : -1));
-                if (offset > player.matrix[0].length) {
+                if (offset > player.matrix.length) {
                     rotate(player.matrix, -dir);
                     player.pos.x = pos;
                     return;
@@ -297,10 +282,21 @@
             }
         }
 
-        // 【修正】自動落下と画面更新を行うループ関数
+        function rotate(matrix, dir) {
+            for (let y = 0; y < matrix.length; ++y) {
+                for (let x = 0; x < y; ++x) {
+                    [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+                }
+            }
+            if (dir > 0) { matrix.forEach(row => row.reverse()); } 
+            else { matrix.reverse(); }
+        }
+
         function update(time = 0) {
             if (!gameRunning) return;
             
             const deltaTime = time - lastTime;
             lastTime = time;
-
+            dropCounter += deltaTime;
+            if (dropCounter > dropInterval) { playerDrop(); }
+            draw();
