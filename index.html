@@ -2,14 +2,17 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>シンプルテトリス - スタートボタン付き</title>
+    <title>シンプルテトリス - レベルアップ機能付き</title>
     <style>
         body { background: #333; color: white; text-align: center; font-family: sans-serif; }
         .container { position: relative; display: inline-block; margin-top: 10px; }
         canvas { border: 2px solid white; background: #111; display: block; }
-        .score-board { font-size: 24px; font-weight: bold; margin: 10px 0; color: #0DFF72; }
         
-        /* スタート画面の重ね合わせ */
+        /* スコアとレベルの表示エリア */
+        .info-board { font-size: 24px; font-weight: bold; margin: 10px 0; }
+        .score-box { color: #0DFF72; margin-right: 20px; }
+        .level-box { color: #FFE138; }
+        
         .overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -21,7 +24,6 @@
             z-index: 10;
         }
         
-        /* スタート・リスタートボタンの見た目 */
         .start-btn {
             padding: 12px 30px;
             font-size: 20px;
@@ -42,10 +44,13 @@
 </head>
 <body>
     <h1>TETRIS</h1>
-    <div class="score-board">SCORE: <span id="score">0</span></div>
+    <!-- レベル表示を追加 -->
+    <div class="info-board">
+        <span class="score-box">SCORE: <span id="score">0</span></span>
+        <span class="level-box">LEVEL: <span id="level">1</span></span>
+    </div>
     
     <div class="container">
-        <!-- ゲーム開始・終了時のオーバーレイ画面 -->
         <div id="overlay" class="overlay">
             <div id="game-status-text" class="game-over-text" style="display: none;">GAME OVER</div>
             <button id="start-button" class="start-btn" onclick="startGame()">START GAME</button>
@@ -62,10 +67,13 @@
         ctx.scale(20, 20);
 
         let score = 0;
-        let gameRunning = false; // ゲームが実行中かどうかを管理するフラグ
+        let level = 1;           // 【新機能】現在のレベル
+        let gameRunning = false;
 
-        function updateScore() {
+        // 画面上のスコアとレベルの表示を更新
+        function updateInfo() {
             document.getElementById('score').innerText = score;
+            document.getElementById('level').innerText = level;
         }
 
         function collide(arena, player) {
@@ -87,13 +95,13 @@
         }
 
         function createPiece(type) {
-            if (type === 'T') return [[0, 0, 0], [1, 1, 1], [0, 1, 0]];
-            if (type === 'O') return [[2, 2], [2, 2]];
-            if (type === 'L') return [[0, 0, 3], [3, 3, 3], [0, 0, 0]];
-            if (type === 'J') return [[4, 0, 0], [4, 4, 4], [0, 0, 0]];
-            if (type === 'I') return [[0, 5, 0, 0], [0, 5, 0, 0], [0, 5, 0, 0], [0, 5, 0, 0]];
-            if (type === 'S') return [[0, 6, 6], [6, 6, 0], [0, 0, 0]];
-            if (type === 'Z') return [[7, 7, 0], [0, 7, 7], [0, 0, 0]];
+            if (type === 'T') return [,,];
+            if (type === 'O') return [,];
+            if (type === 'L') return [,,];
+            if (type === 'J') return [,,];
+            if (type === 'I') return [,,,];
+            if (type === 'S') return [,,];
+            if (type === 'Z') return [,,];
         }
 
         function draw() {
@@ -128,7 +136,20 @@
                 score += rowCount * 10;
                 rowCount *= 2;
             }
-            updateScore();
+            
+            // 【新機能】レベルと速度の計算
+            // 100点ごとにレベルが1上がる（最大レベル10）
+            let newLevel = Math.floor(score / 100) + 1;
+            if (newLevel > 10) newLevel = 10;
+            
+            if (newLevel !== level) {
+                level = newLevel;
+                // レベルが上がるほど落下間隔（ミリ秒）を短くする
+                // 初期1000ms（1秒）から、レベル10で100ms（0.1秒）まで高速化
+                dropInterval = 1000 - (level - 1) * 100;
+            }
+
+            updateInfo();
         }
 
         function merge(arena, player) {
@@ -166,7 +187,6 @@
             if (collide(arena, player)) { player.pos.x -= dir; }
         }
 
-        // ゲーム終了処理の追加
         function gameOver() {
             gameRunning = false;
             document.getElementById('game-status-text').style.display = 'block';
@@ -180,7 +200,7 @@
             player.pos.y = 0;
             player.pos.x = (arena.length / 2 | 0) - (player.matrix.length / 2 | 0);
             if (collide(arena, player)) {
-                gameOver(); // ぶつかったらゲームオーバー画面へ
+                gameOver();
             }
         }
 
@@ -210,11 +230,11 @@
         }
 
         let dropCounter = 0;
-        let dropInterval = 1000;
+        let dropInterval = 1000; // 初期スピード：1000ミリ秒（1秒）に1マス落下
         let lastTime = 0;
 
         function update(time = 0) {
-            if (!gameRunning) return; // フラグがオフなら処理をストップ
+            if (!gameRunning) return;
             
             const deltaTime = time - lastTime;
             lastTime = time;
@@ -224,21 +244,19 @@
             requestAnimationFrame(update);
         }
 
-        // ボタンが押されたときにゲームを開始する関数
         function startGame() {
-            // フィールドとスコアの初期化
             arena.forEach(row => row.fill(0));
             score = 0;
-            updateScore();
+            level = 1;
+            dropInterval = 1000; // スピードを初期値にリセット
+            updateInfo();
             
-            // 画面表示の切り替え
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('game-status-text').style.display = 'none';
             
-            // ゲーム開始
             gameRunning = true;
             playerReset();
-            lastTime = performance.now(); // 時間のズレを防止
+            lastTime = performance.now();
             update();
         }
 
@@ -246,7 +264,7 @@
         const player = { pos: {x: 0, y: 0}, matrix: null };
 
         document.addEventListener('keydown', event => {
-            if (!gameRunning) return; // ゲーム中以外はキー操作を受け付けない
+            if (!gameRunning) return;
             
             if (event.keyCode === 37) { playerMove(-1); }
             else if (event.keyCode === 39) { playerMove(1); }
@@ -258,7 +276,6 @@
             }
         });
 
-        // 最初のロード時は背景だけ描画しておく
         ctx.fillStyle = '#111';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     </script>
