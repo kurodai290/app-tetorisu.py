@@ -44,7 +44,6 @@
 </head>
 <body>
     <h1>TETRIS</h1>
-    <!-- レベル表示を追加 -->
     <div class="info-board">
         <span class="score-box">SCORE: <span id="score">0</span></span>
         <span class="level-box">LEVEL: <span id="level">1</span></span>
@@ -67,10 +66,15 @@
         ctx.scale(20, 20);
 
         let score = 0;
-        let level = 1;           // 【新機能】現在のレベル
+        let level = 1;
         let gameRunning = false;
+        let arena = createMatrix(12, 20);
+        
+        const player = {
+            pos: {x: 0, y: 0},
+            matrix: null
+        };
 
-        // 画面上のスコアとレベルの表示を更新
         function updateInfo() {
             document.getElementById('score').innerText = score;
             document.getElementById('level').innerText = level;
@@ -94,14 +98,44 @@
             return matrix;
         }
 
+        // バグ修正：各ブロックの2次元配列（形状データ）を正しく定義
         function createPiece(type) {
-            if (type === 'T') return [,,];
-            if (type === 'O') return [,];
-            if (type === 'L') return [,,];
-            if (type === 'J') return [,,];
-            if (type === 'I') return [,,,];
-            if (type === 'S') return [,,];
-            if (type === 'Z') return [,,];
+            if (type === 'T') {
+                return [,
+ ,
+ ,
+                ];
+            } else if (type === 'O') {
+                return [,
+ ,
+                ];
+            } else if (type === 'L') {
+                return [,
+ ,
+ ,
+                ];
+            } else if (type === 'J') {
+                return [,
+ ,
+ ,
+                ];
+            } else if (type === 'I') {
+                return [,
+ ,
+ ,
+ ,
+                ];
+            } else if (type === 'S') {
+                return [,
+ ,
+ ,
+                ];
+            } else if (type === 'Z') {
+                return [,
+ ,
+ ,
+                ];
+            }
         }
 
         function draw() {
@@ -137,15 +171,11 @@
                 rowCount *= 2;
             }
             
-            // 【新機能】レベルと速度の計算
-            // 100点ごとにレベルが1上がる（最大レベル10）
             let newLevel = Math.floor(score / 100) + 1;
             if (newLevel > 10) newLevel = 10;
             
             if (newLevel !== level) {
                 level = newLevel;
-                // レベルが上がるほど落下間隔（ミリ秒）を短くする
-                // 初期1000ms（1秒）から、レベル10で100ms（0.1秒）まで高速化
                 dropInterval = 1000 - (level - 1) * 100;
             }
 
@@ -198,7 +228,7 @@
             const pieces = 'ILJOTSZ';
             player.matrix = createPiece(pieces[pieces.length * Math.random() | 0]);
             player.pos.y = 0;
-            player.pos.x = (arena.length / 2 | 0) - (player.matrix.length / 2 | 0);
+            player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
             if (collide(arena, player)) {
                 gameOver();
             }
@@ -230,54 +260,45 @@
         }
 
         let dropCounter = 0;
-        let dropInterval = 1000; // 初期スピード：1000ミリ秒（1秒）に1マス落下
+        let dropInterval = 1000;
         let lastTime = 0;
 
+        // 補完：途切れていたupdate関数を完結
         function update(time = 0) {
             if (!gameRunning) return;
             
             const deltaTime = time - lastTime;
             lastTime = time;
             dropCounter += deltaTime;
-            if (dropCounter > dropInterval) { playerDrop(); }
+            
+            if (dropCounter > dropInterval) {
+                playerDrop();
+            }
+            
             draw();
             requestAnimationFrame(update);
         }
 
+        // 新設：STARTボタン押下時にゲームを初期化して開始する関数
         function startGame() {
-            arena.forEach(row => row.fill(0));
+            arena = createMatrix(12, 20); // 12列×20行の盤面
             score = 0;
             level = 1;
-            dropInterval = 1000; // スピードを初期値にリセット
-            updateInfo();
+            dropInterval = 1000;
+            dropCounter = 0;
+            lastTime = performance.now();
             
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('game-status-text').style.display = 'none';
+            updateInfo();
+            playerReset();
             
             gameRunning = true;
-            playerReset();
-            lastTime = performance.now();
-            update();
+            document.getElementById('overlay').style.display = 'none';
+            update(lastTime);
         }
 
-        const arena = createMatrix(12, 20);
-        const player = { pos: {x: 0, y: 0}, matrix: null };
-
+        // キーボード操作のリスナー
         document.addEventListener('keydown', event => {
             if (!gameRunning) return;
             
-            if (event.keyCode === 37) { playerMove(-1); }
-            else if (event.keyCode === 39) { playerMove(1); }
-            else if (event.keyCode === 40) { playerDrop(); }
-            else if (event.keyCode === 38) { playerRotate(1); }
-            else if (event.keyCode === 32) { 
-                event.preventDefault();
-                playerHardDrop(); 
-            }
-        });
-
-        ctx.fillStyle = '#111';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    </script>
-</body>
-</html>
+            if (event.keyCode === 37) {        // 左矢印
+                playerMove(-1);
