@@ -1,64 +1,3 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>シンプルテトリス - プレイ画面</title>
-    <style>
-        body { background: #333; color: white; text-align: center; font-family: sans-serif; }
-        .container { position: relative; display: inline-block; margin-top: 10px; }
-        canvas { border: 2px solid white; background: #111; display: block; }
-        
-        .info-board { font-size: 24px; font-weight: bold; margin: 10px 0; }
-        .score-box { color: #0DFF72; margin-right: 20px; }
-        .level-box { color: #FFE138; }
-        
-        /* ゲームオーバー時の重ね合わせ画面 */
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
-        
-        .restart-btn {
-            padding: 12px 30px;
-            font-size: 20px;
-            font-weight: bold;
-            background-color: #FF0D72;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(255, 13, 114, 0.4);
-        }
-        .restart-btn:hover { background-color: #d60b5f; transform: scale(1.05); }
-        
-        .game-over-text { color: #FF0D72; font-size: 28px; font-weight: bold; margin-bottom: 20px; }
-    </style>
-</head>
-<body>
-    <h1>TETRIS</h1>
-    <div class="info-board">
-        <span class="score-box">SCORE: <span id="score">0</span></span>
-        <span class="level-box">LEVEL: <span id="level">1</span></span>
-    </div>
-    
-    <div class="container">
-        <!-- ゲームオーバー時だけ表示する画面 -->
-        <div id="overlay" class="overlay" style="display: none;">
-            <div class="game-over-text">GAME OVER</div>
-            <button class="restart-btn" onclick="startGame()">RESTART GAME</button>
-        </div>
-        <canvas id="canvas" width="240" height="400"></canvas>
-    </div>
-
-    <p>操作方法：左右矢印キー（移動） / 上矢印キー（回転） / 下矢印キー（加速落下）</p>
-    <p>スペースキー：一気に落とす（ハードドロップ）</p>
-
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -215,7 +154,8 @@
             const pieces = 'ILJOTSZ';
             player.matrix = createPiece(pieces[pieces.length * Math.random() | 0]);
             player.pos.y = 0;
-            player.pos.x = (arena.length / 2 | 0) - (player.matrix.length / 2 | 0);
+            // 【バグ修正】 arena.length から arena[0].length に変更して横幅を基準にする
+            player.pos.x = (arena[0].length / 2 | 0) - (player.matrix.length / 2 | 0);
             if (collide(arena, player)) {
                 gameOver();
             }
@@ -279,5 +219,3 @@
         // ページが開かれたら自動でゲームを開始する
         startGame();
     </script>
-</body>
-</html>
