@@ -1,88 +1,26 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>テトリス</title>
-
+<title>本格テトリス</title>
 <style>
-body{
-    background:#111;
-    color:white;
-    font-family:sans-serif;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:20px;
-    margin:0;
-    height:100vh;
-}
-
-canvas{
-    border:3px solid white;
-    background:black;
-}
-
-.panel{
-    width:180px;
-}
-
-h2{
-    margin-top:0;
-}
-
-.box{
-    border:2px solid white;
-    padding:10px;
-    margin-bottom:10px;
-}
+body{background:#111;color:#fff;font-family:sans-serif;display:flex;gap:20px;justify-content:center;padding:20px}
+canvas{background:#000;border:2px solid #fff}
+.panel{width:220px}
+.box{border:1px solid #888;padding:8px;margin-bottom:8px}
 </style>
-
 </head>
 <body>
-
 <canvas id="game" width="300" height="600"></canvas>
-
 <div class="panel">
-    <div class="box">
-        <h2>スコア</h2>
-        <div id="score">0</div>
-    </div>
-
-```
-<div class="box">
-    <h2>レベル</h2>
-    <div id="level">1</div>
+<div class="box">スコア: <span id="score">0</span></div>
+<div class="box">ライン: <span id="lines">0</span></div>
+<div class="box">レベル: <span id="level">1</span></div>
+<div class="box">ホールド: <span id="hold">なし</span></div>
+<div class="box">次ミノ: <span id="next">-</span></div>
+<p>↑回転 ↓加速 ←→移動<br>Space:ハードドロップ<br>Z:ホールド</p>
 </div>
-
-<div class="box">
-    <h2>ライン</h2>
-    <div id="lines">0</div>
-</div>
-
-<div class="box">
-    <h2>ホールド</h2>
-    <div id="hold">なし</div>
-</div>
-
-<div class="box">
-    <h2>次</h2>
-    <div id="next">-</div>
-</div>
-
-<p>
-    ↑ 回転<br>
-    ↓ 落下加速<br>
-    ← → 移動<br>
-    Space ハードドロップ<br>
-    Z ホールド
-</p>
-```
-
-</div>
-
 <script src="tetris.js"></script>
-
 </body>
 </html>
