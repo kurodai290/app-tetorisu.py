@@ -5,23 +5,44 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tetris Production</title>
 <style>
-body{margin:0;background:#111;color:#fff;font-family:sans-serif;display:flex;justify-content:center;gap:20px;padding:20px;overflow:hidden}
-canvas{background:#000;border:2px solid #fff}
+*{box-sizing:border-box}
+body{
+  margin:0;background:#111;color:#fff;font-family:sans-serif;
+  display:flex;justify-content:center;align-items:flex-start;gap:20px;
+  padding:20px;min-height:100vh;overflow:auto
+}
+canvas{background:#000;border:2px solid #fff;display:block}
 .panel{width:240px}
-.box{border:1px solid #666;padding:8px;margin:8px 0}
+.box{border:1px solid #666;padding:10px;margin:8px 0;background:#181818}
+h1{font-size:22px;margin:0 0 12px}
+button{background:#333;color:#fff;border:1px solid #777;padding:8px 12px;cursor:pointer}
+button:hover{background:#444}
+#status{min-height:24px}
+@media(max-width:650px){
+  body{gap:10px;padding:10px}
+  canvas{width:300px;height:600px}
+  .panel{width:180px;font-size:13px}
+}
 </style>
 </head>
 <body>
-<canvas id="game" width="300" height="600"></canvas>
-<div class="panel">
-<div class="box">スコア: <span id="score">0</span></div>
-<div class="box">ハイスコア: <span id="high">0</span></div>
-<div class="box">ライン: <span id="lines">0</span></div>
-<div class="box">レベル: <span id="level">1</span></div>
-<div class="box">ホールド: <span id="hold">なし</span></div>
-<div class="box">次ミノ: <span id="next">-</span></div>
-<p>↑回転 ↓加速 ←→移動 Space:ハードドロップ Z:ホールド</p>
+<div>
+  <canvas id="game" width="300" height="600"></canvas>
 </div>
+
+<div class="panel">
+  <h1>テトリス</h1>
+  <div class="box">スコア: <span id="score">0</span></div>
+  <div class="box">ハイスコア: <span id="high">0</span></div>
+  <div class="box">ライン: <span id="lines">0</span></div>
+  <div class="box">レベル: <span id="level">1</span></div>
+  <div class="box">ホールド: <span id="hold">なし</span></div>
+  <div class="box">次ミノ: <span id="next">-</span></div>
+  <div class="box" id="status">ゲーム開始</div>
+  <button id="restart">リスタート</button>
+  <p>← → 移動<br>↑ 回転<br>↓ 落下を加速<br>Space ハードドロップ<br>Z ホールド</p>
+</div>
+
 <script src="tetris.js"></script>
 </body>
 </html>
