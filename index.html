@@ -3,23 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>本格テトリス</title>
+<title>Tetris Production</title>
 <style>
-body{background:#111;color:#fff;font-family:sans-serif;display:flex;gap:20px;justify-content:center;padding:20px}
+body{margin:0;background:#111;color:#fff;font-family:sans-serif;display:flex;justify-content:center;gap:20px;padding:20px;overflow:hidden}
 canvas{background:#000;border:2px solid #fff}
-.panel{width:220px}
-.box{border:1px solid #888;padding:8px;margin-bottom:8px}
+.panel{width:240px}
+.box{border:1px solid #666;padding:8px;margin:8px 0}
 </style>
 </head>
 <body>
 <canvas id="game" width="300" height="600"></canvas>
 <div class="panel">
 <div class="box">スコア: <span id="score">0</span></div>
+<div class="box">ハイスコア: <span id="high">0</span></div>
 <div class="box">ライン: <span id="lines">0</span></div>
 <div class="box">レベル: <span id="level">1</span></div>
 <div class="box">ホールド: <span id="hold">なし</span></div>
 <div class="box">次ミノ: <span id="next">-</span></div>
-<p>↑回転 ↓加速 ←→移動<br>Space:ハードドロップ<br>Z:ホールド</p>
+<p>↑回転 ↓加速 ←→移動 Space:ハードドロップ Z:ホールド</p>
 </div>
 <script src="tetris.js"></script>
 </body>
