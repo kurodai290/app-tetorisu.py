@@ -2,32 +2,62 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Tetris Production</title>
 <style>
 *{box-sizing:border-box}
-body{
-  margin:0;background:#111;color:#fff;font-family:sans-serif;
-  display:flex;justify-content:center;align-items:flex-start;gap:20px;
-  padding:20px;min-height:100vh;overflow:auto
+html,body{margin:0;min-height:100%;background:#111;color:#fff;font-family:sans-serif}
+body{display:flex;justify-content:center;align-items:flex-start;gap:20px;padding:18px;touch-action:none}
+canvas{background:#000;border:2px solid #fff;display:block;width:300px;height:600px}
+.panel{width:250px}
+h1{font-size:22px;margin:0 0 10px}
+.box{border:1px solid #666;padding:8px;margin:7px 0;background:#181818}
+button{
+  background:#333;color:#fff;border:1px solid #777;border-radius:7px;
+  padding:10px 13px;font-size:16px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;user-select:none
 }
-canvas{background:#000;border:2px solid #fff;display:block}
-.panel{width:240px}
-.box{border:1px solid #666;padding:10px;margin:8px 0;background:#181818}
-h1{font-size:22px;margin:0 0 12px}
-button{background:#333;color:#fff;border:1px solid #777;padding:8px 12px;cursor:pointer}
-button:hover{background:#444}
-#status{min-height:24px}
-@media(max-width:650px){
-  body{gap:10px;padding:10px}
-  canvas{width:300px;height:600px}
-  .panel{width:180px;font-size:13px}
+button:active{background:#555;transform:scale(.97)}
+#status{min-height:26px}
+.mobile-controls{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+  width:300px;
+  margin-top:10px
+}
+.mobile-controls button{height:48px;padding:0;font-size:20px}
+.mobile-controls .wide{grid-column:span 3}
+.mobile-controls .small{font-size:15px}
+.mobile-controls .empty{visibility:hidden}
+@media(max-width:700px){
+  body{flex-direction:column;align-items:center;gap:8px;padding:10px}
+  .panel{width:300px}
+  .panel h1{display:none}
+  .box{display:inline-block;margin:3px;padding:6px}
+  #status{display:block}
+  #restart{width:100%}
+  body{overflow-x:hidden}
+}
+@media(min-width:701px){
+  .mobile-controls{display:none}
 }
 </style>
 </head>
 <body>
 <div>
   <canvas id="game" width="300" height="600"></canvas>
+  <div class="mobile-controls" aria-label="スマホ操作">
+    <button class="empty"></button>
+    <button data-action="rotate">↻<br><span class="small">回転</span></button>
+    <button data-action="hold">H<br><span class="small">ホールド</span></button>
+
+    <button data-action="left">←</button>
+    <button data-action="down">↓</button>
+    <button data-action="right">→</button>
+
+    <button class="wide" data-action="drop">⤓ ハードドロップ</button>
+  </div>
 </div>
 
 <div class="panel">
@@ -36,11 +66,13 @@ button:hover{background:#444}
   <div class="box">ハイスコア: <span id="high">0</span></div>
   <div class="box">ライン: <span id="lines">0</span></div>
   <div class="box">レベル: <span id="level">1</span></div>
+  <div class="box">コンボ: <span id="combo">0</span></div>
   <div class="box">ホールド: <span id="hold">なし</span></div>
   <div class="box">次ミノ: <span id="next">-</span></div>
   <div class="box" id="status">ゲーム開始</div>
   <button id="restart">リスタート</button>
-  <p>← → 移動<br>↑ 回転<br>↓ 落下を加速<br>Space ハードドロップ<br>Z ホールド</p>
+  <p>PC: ← → 移動 / ↑ 回転 / ↓ ソフトドロップ<br>Space: ハードドロップ / Z: ホールド</p>
+  <p>特殊技: Tスピン / Tスピンミニ / コンボ / バック・トゥ・バック</p>
 </div>
 
 <script src="tetris.js"></script>
