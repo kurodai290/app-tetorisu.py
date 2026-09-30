@@ -42,21 +42,50 @@ button:active{background:#555;transform:scale(.97)}
 @media(min-width:701px){
   .mobile-controls{display:none}
 }
+
+.mobile-controls{
+  display:none;
+  width:300px;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:10px;
+}
+.mobile-btn{
+  min-height:58px;
+  padding:4px;
+  font-size:22px;
+  font-weight:bold;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.mobile-btn small{font-size:11px;font-weight:normal}
+.settings-link{color:#fff;text-decoration:none;display:inline-block;padding:8px 10px;border:1px solid #777;border-radius:6px;background:#222}
+@media(max-width:700px){
+  body{flex-direction:column;align-items:center;gap:8px;padding:8px}
+  canvas{width:300px;height:600px}
+  .panel{width:300px}
+  .panel h1{display:none}
+  .box{display:inline-block;margin:3px;padding:6px}
+  #status{display:block}
+  #restart{width:100%}
+  .mobile-controls{display:grid}
+  body{overflow-x:hidden}
+}
+
 </style>
 </head>
 <body>
 <div>
   <canvas id="game" width="300" height="600"></canvas>
   <div class="mobile-controls" aria-label="スマホ操作">
-    <button class="empty"></button>
-    <button data-action="rotate">↻<br><span class="small">回転</span></button>
-    <button data-action="hold">H<br><span class="small">ホールド</span></button>
+    <button type="button" class="mobile-btn" data-action="hold">H<br><small>ホールド</small></button>
+    <button type="button" class="mobile-btn" data-action="rotate">↻<br><small>回転</small></button>
+    <button type="button" class="mobile-btn" data-action="drop">⬇<br><small>ハード</small></button>
 
-    <button data-action="left">←</button>
-    <button data-action="down">↓</button>
-    <button data-action="right">→</button>
-
-    <button class="wide" data-action="drop">⤓ ハードドロップ</button>
+    <button type="button" class="mobile-btn" data-action="left">←</button>
+    <button type="button" class="mobile-btn" data-action="down">↓</button>
+    <button type="button" class="mobile-btn" data-action="right">→</button>
   </div>
 </div>
 
@@ -70,7 +99,7 @@ button:active{background:#555;transform:scale(.97)}
   <div class="box">ホールド: <span id="hold">なし</span></div>
   <div class="box">次ミノ: <span id="next">-</span></div>
   <div class="box" id="status">ゲーム開始</div>
-  <button id="restart">リスタート</button>
+  <button id="restart">リスタート</button><br><br><a class="settings-link" href="settings.html">⚙ キー設定</a>
   <p>PC: ← → 移動 / ↑ 回転 / ↓ ソフトドロップ<br>Space: ハードドロップ / Z: ホールド</p>
   <p>特殊技: Tスピン / Tスピンミニ / コンボ / バック・トゥ・バック</p>
 </div>

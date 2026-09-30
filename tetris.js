@@ -2,6 +2,34 @@
 
 "use strict";
 
+// ===== キー設定 =====
+const DEFAULT_KEYS = {
+  left: "ArrowLeft",
+  right: "ArrowRight",
+  down: "ArrowDown",
+  rotate: "ArrowUp",
+  hardDrop: " ",
+  hold: "z"
+};
+
+let keyConfig = {};
+try {
+  keyConfig = JSON.parse(localStorage.getItem("tetrisKeyConfig") || "null") || {...DEFAULT_KEYS};
+} catch(e) {
+  keyConfig = {...DEFAULT_KEYS};
+}
+
+function saveKeyConfig() {
+  localStorage.setItem("tetrisKeyConfig", JSON.stringify(keyConfig));
+}
+
+function keyMatches(e, action) {
+  const configured = keyConfig[action];
+  if (!configured) return false;
+  return e.key === configured || e.code === configured;
+}
+
+
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
@@ -501,59 +529,75 @@ function action(name){
   else if(name==="drop") hardDrop();
 }
 
-// PC操作
-document.addEventListener("keydown",e=>{
-  if(["ArrowLeft","ArrowRight","ArrowDown","ArrowUp"," "].includes(e.key)) e.preventDefault();
+// PC操作（キー設定ページの設定を使用）
+document.addEventListener("keydown", e => {
+  if (
+    keyMatches(e,"left") ||
+    keyMatches(e,"right") ||
+    keyMatches(e,"down") ||
+    keyMatches(e,"rotate") ||
+    keyMatches(e,"hardDrop") ||
+    keyMatches(e,"hold")
+  ) e.preventDefault();
 
   if(gameOver){
     if(e.key==="Enter") resetGame();
     return;
   }
 
-  if(e.key==="ArrowLeft") move(-1);
-  else if(e.key==="ArrowRight") move(1);
-  else if(e.key==="ArrowDown") softDrop();
-  else if(e.key==="ArrowUp") rotate();
-  else if(e.key===" ") hardDrop();
-  else if(e.key==="z" || e.key==="Z") hold();
+  if(keyMatches(e,"left")) move(-1);
+  else if(keyMatches(e,"right")) move(1);
+  else if(keyMatches(e,"down")) softDrop();
+  else if(keyMatches(e,"rotate")) rotate();
+  else if(keyMatches(e,"hardDrop")) hardDrop();
+  else if(keyMatches(e,"hold")) hold();
 });
 
 // スマホ操作
-document.querySelectorAll(".mobile-controls [data-action]").forEach(btn=>{
-  const name=btn.dataset.action;
+// pointerdownだけにして、ブラウザのクリックやスクロールによる誤作動を防止。
+document.querySelectorAll(".mobile-btn[data-action]").forEach(btn => {
+  const name = btn.dataset.action;
 
-  const press=e=>{
+  btn.addEventListener("pointerdown", e => {
     e.preventDefault();
+    btn.setPointerCapture?.(e.pointerId);
     action(name);
-  };
-
-  btn.addEventListener("pointerdown",press);
-  btn.addEventListener("contextmenu",e=>e.preventDefault());
-});
-
-// 長押しで左右・下を連続操作
-document.querySelectorAll('[data-action="left"],[data-action="right"],[data-action="down"]').forEach(btn=>{
-  let timer=null;
-  let active=false;
-  const name=btn.dataset.action;
-
-  btn.addEventListener("pointerdown",e=>{
-    e.preventDefault();
-    active=true;
-    action(name);
-    timer=setInterval(()=>{
-      if(active && !gameOver) action(name);
-    },90);
   });
 
-  const stop=()=>{
-    active=false;
-    if(timer){clearInterval(timer);timer=null;}
+  btn.addEventListener("contextmenu", e => e.preventDefault());
+});
+
+// 左右・下は長押し対応
+document.querySelectorAll(
+  '.mobile-btn[data-action="left"],.mobile-btn[data-action="right"],.mobile-btn[data-action="down"]'
+).forEach(btn => {
+  let timer = null;
+  let active = false;
+  const name = btn.dataset.action;
+
+  btn.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    active = true;
+    btn.setPointerCapture?.(e.pointerId);
+    action(name);
+
+    timer = setInterval(() => {
+      if(active && !gameOver) action(name);
+    }, 90);
+  });
+
+  const stop = e => {
+    if(e) e.preventDefault();
+    active = false;
+    if(timer !== null){
+      clearInterval(timer);
+      timer = null;
+    }
   };
 
-  btn.addEventListener("pointerup",stop);
-  btn.addEventListener("pointercancel",stop);
-  btn.addEventListener("pointerleave",stop);
+  btn.addEventListener("pointerup", stop);
+  btn.addEventListener("pointercancel", stop);
+  btn.addEventListener("lostpointercapture", stop);
 });
 
 restartBtn.addEventListener("click",resetGame);
