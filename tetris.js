@@ -553,52 +553,106 @@ document.addEventListener("keydown", e => {
   else if(keyMatches(e,"hold")) hold();
 });
 
-// スマホ操作
-// pointerdownだけにして、ブラウザのクリックやスクロールによる誤作動を防止。
-document.querySelectorAll(".mobile-btn[data-action]").forEach(btn => {
-  const name = btn.dataset.action;
+// ===== スマホ操作 =====
+// ボタンは touchstart / touchend と click の3系統を安全に処理。
+// 「押したのに動かない」を避けるため、pointer captureは使用しません。
+const mobileButtons = document.querySelectorAll(".mobile-btn[data-action]");
+const touchState = new WeakMap();
 
-  btn.addEventListener("pointerdown", e => {
-    e.preventDefault();
-    btn.setPointerCapture?.(e.pointerId);
+mobileButtons.forEach(btn => {
+  const name = btn.dataset.action;
+  let lastTouch = 0;
+  let repeatTimer = null;
+
+  function runOnce(e) {
+    if(e) e.preventDefault();
+    if(gameOver) return;
     action(name);
+  }
+
+  btn.addEventListener("touchstart", e => {
+    e.preventDefault();
+    lastTouch = Date.now();
+    runOnce(e);
+
+    // 左右と下だけ長押し
+    if(name==="left" || name==="right" || name==="down"){
+      repeatTimer = setInterval(() => {
+        if(!gameOver) action(name);
+      }, 120);
+    }
+  }, {passive:false});
+
+  btn.addEventListener("touchend", e => {
+    e.preventDefault();
+    if(repeatTimer){
+      clearInterval(repeatTimer);
+      repeatTimer=null;
+    }
+  }, {passive:false});
+
+  btn.addEventListener("touchcancel", () => {
+    if(repeatTimer){
+      clearInterval(repeatTimer);
+      repeatTimer=null;
+    }
+  }, {passive:false});
+
+  // PCや一部スマホブラウザ向け
+  btn.addEventListener("click", e => {
+    // touchstart直後のclickは二重入力になるので無視
+    if(Date.now()-lastTouch < 500) return;
+    runOnce(e);
   });
 
   btn.addEventListener("contextmenu", e => e.preventDefault());
 });
 
-// 左右・下は長押し対応
-document.querySelectorAll(
-  '.mobile-btn[data-action="left"],.mobile-btn[data-action="right"],.mobile-btn[data-action="down"]'
-).forEach(btn => {
-  let timer = null;
-  let active = false;
-  const name = btn.dataset.action;
+// ===== 盤面のスワイプ操作 =====
+let gestureStartX=0;
+let gestureStartY=0;
+let gestureStartTime=0;
 
-  btn.addEventListener("pointerdown", e => {
-    e.preventDefault();
-    active = true;
-    btn.setPointerCapture?.(e.pointerId);
-    action(name);
+canvas.addEventListener("touchstart", e => {
+  if(e.touches.length!==1) return;
+  const t=e.touches[0];
+  gestureStartX=t.clientX;
+  gestureStartY=t.clientY;
+  gestureStartTime=Date.now();
+  e.preventDefault();
+}, {passive:false});
 
-    timer = setInterval(() => {
-      if(active && !gameOver) action(name);
-    }, 90);
-  });
+canvas.addEventListener("touchend", e => {
+  if(!e.changedTouches.length || gameOver) return;
 
-  const stop = e => {
-    if(e) e.preventDefault();
-    active = false;
-    if(timer !== null){
-      clearInterval(timer);
-      timer = null;
-    }
-  };
+  const t=e.changedTouches[0];
+  const dx=t.clientX-gestureStartX;
+  const dy=t.clientY-gestureStartY;
+  const dt=Date.now()-gestureStartTime;
 
-  btn.addEventListener("pointerup", stop);
-  btn.addEventListener("pointercancel", stop);
-  btn.addEventListener("lostpointercapture", stop);
-});
+  const ax=Math.abs(dx);
+  const ay=Math.abs(dy);
+
+  // 横スワイプ
+  if(ax>=30 && ax>ay){
+    const count=Math.max(1, Math.min(5, Math.floor(ax/35)));
+    for(let i=0;i<count;i++) action(dx>0 ? "right" : "left");
+  }
+  // 下スワイプ = ハードドロップ
+  else if(ay>=45 && dy>0){
+    action("drop");
+  }
+  // 上スワイプ = ハードドロップ
+  else if(ay>=45 && dy<0){
+    action("drop");
+  }
+  // 短いタップ = 回転
+  else if(ax<20 && ay<20 && dt<500){
+    action("rotate");
+  }
+
+  e.preventDefault();
+}, {passive:false});
 
 restartBtn.addEventListener("click",resetGame);
 

@@ -7,8 +7,8 @@
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:#111;color:#fff;font-family:sans-serif}
-body{display:flex;justify-content:center;align-items:flex-start;gap:20px;padding:18px;touch-action:none}
-canvas{background:#000;border:2px solid #fff;display:block;width:300px;height:600px}
+body{display:flex;justify-content:center;align-items:flex-start;gap:20px;padding:18px;touch-action:auto}
+canvas{background:#000;border:2px solid #fff;display:block;width:300px;height:600px;touch-action:none}
 .panel{width:250px}
 h1{font-size:22px;margin:0 0 10px}
 .box{border:1px solid #666;padding:8px;margin:7px 0;background:#181818}
@@ -20,30 +20,6 @@ button{
 button:active{background:#555;transform:scale(.97)}
 #status{min-height:26px}
 .mobile-controls{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:7px;
-  width:300px;
-  margin-top:10px
-}
-.mobile-controls button{height:48px;padding:0;font-size:20px}
-.mobile-controls .wide{grid-column:span 3}
-.mobile-controls .small{font-size:15px}
-.mobile-controls .empty{visibility:hidden}
-@media(max-width:700px){
-  body{flex-direction:column;align-items:center;gap:8px;padding:10px}
-  .panel{width:300px}
-  .panel h1{display:none}
-  .box{display:inline-block;margin:3px;padding:6px}
-  #status{display:block}
-  #restart{width:100%}
-  body{overflow-x:hidden}
-}
-@media(min-width:701px){
-  .mobile-controls{display:none}
-}
-
-.mobile-controls{
   display:none;
   width:300px;
   grid-template-columns:repeat(3,1fr);
@@ -51,14 +27,24 @@ button:active{background:#555;transform:scale(.97)}
   margin-top:10px;
 }
 .mobile-btn{
-  min-height:58px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  min-height:62px;
   padding:4px;
-  font-size:22px;
+  background:#333;
+  color:#fff;
+  border:2px solid #777;
+  border-radius:9px;
+  font-size:25px;
   font-weight:bold;
-  touch-action:none;
+  touch-action:manipulation;
   user-select:none;
   -webkit-user-select:none;
+  -webkit-touch-callout:none;
 }
+.mobile-btn:active{background:#666;transform:scale(.96)}
 .mobile-btn small{font-size:11px;font-weight:normal}
 .settings-link{color:#fff;text-decoration:none;display:inline-block;padding:8px 10px;border:1px solid #777;border-radius:6px;background:#222}
 @media(max-width:700px){
@@ -70,9 +56,11 @@ button:active{background:#555;transform:scale(.97)}
   #status{display:block}
   #restart{width:100%}
   .mobile-controls{display:grid}
-  body{overflow-x:hidden}
+  .panel p{font-size:13px}
 }
-
+@media(min-width:701px){
+  .mobile-controls{display:none}
+}
 </style>
 </head>
 <body>
@@ -101,7 +89,7 @@ button:active{background:#555;transform:scale(.97)}
   <div class="box" id="status">ゲーム開始</div>
   <button id="restart">リスタート</button><br><br><a class="settings-link" href="settings.html">⚙ キー設定</a>
   <p>PC: ← → 移動 / ↑ 回転 / ↓ ソフトドロップ<br>Space: ハードドロップ / Z: ホールド</p>
-  <p>特殊技: Tスピン / Tスピンミニ / コンボ / バック・トゥ・バック</p>
+  <p>スマホ：画面のボタンで操作できます。盤面タップ＝回転、左右スワイプ＝移動、上下スワイプ＝ハードドロップ。</p><p>特殊技: Tスピン / Tスピンミニ / コンボ / バック・トゥ・バック</p>
 </div>
 
 <script src="tetris.js"></script>
